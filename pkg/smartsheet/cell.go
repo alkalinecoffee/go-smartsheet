@@ -64,5 +64,6 @@ type Image struct {
 }
 
 type ObjectValue struct {
-	ObjectType string `json:"objectType,omitempty"`
+	ObjectType string   `json:"objectType,omitempty"`
+	Values     []string `json:"values,omitempty"`
 }
