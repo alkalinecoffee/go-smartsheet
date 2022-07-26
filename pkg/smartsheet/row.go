@@ -18,8 +18,9 @@ package smartsheet
 
 import (
 	"fmt"
-	"github.com/mitchellh/mapstructure"
 	"time"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 type Row struct {
@@ -64,6 +65,17 @@ func (c Client) AddRow(sheetId int64, rows []Row) (*[]Row, error) {
 		return nil, fmt.Errorf("could not decode JSON response: %v", dErr)
 	}
 	var result []Row
-	err = mapstructure.Decode(res.Result, &result)
+	mapstructure.Decode(res.Result, &result)
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		Metadata:   nil,
+		DecodeHook: mapstructure.ComposeDecodeHookFunc(ToTimeHookFunc()),
+		Result:     &result,
+	})
+	if err != nil {
+		return &result, fmt.Errorf("failed to create decoder: %v", err)
+	}
+	if err := decoder.Decode(res.Result); err != nil {
+		return nil, fmt.Errorf("could not build row from decoded JSON response: %v", err)
+	}
 	return &result, nil
 }
